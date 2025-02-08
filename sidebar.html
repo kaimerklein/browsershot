@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Documentation Capture Sidebar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      padding: 0;
+      background-color: #fff;
+    }
+    h2, h3 {
+      margin: 10px 0 5px;
+    }
+    button {
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Documentation Capture</h2>
+  <button id="captureBtn">Capture Screenshot &amp; DOM</button>
+  <h3>Analysis</h3>
+  <textarea id="analysisArea" placeholder="LLM analysis will appear here..."></textarea>
+  <h3>Your Comments</h3>
+  <textarea id="comments" placeholder="Add your comments here..."></textarea>
+  <button id="updateBtn">Update Documentation</button>
+  <script src="sidebar.js"></script>
+</body>
+</html>
