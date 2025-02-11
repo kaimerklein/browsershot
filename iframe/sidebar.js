@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const analysisArea = document.getElementById("analysisArea");
   const updateBtn = document.getElementById("updateBtn");
   const commentsArea = document.getElementById("comments");
+  const screenshotThumbnail = document.getElementById("screenshotThumbnail");
 
   captureBtn.addEventListener("click", function () {
     captureDocumentation();
@@ -23,6 +24,9 @@ document.addEventListener("DOMContentLoaded", function () {
       { type: "capture_screenshot" },
       function (response) {
         let screenshotData = response.screenshot;
+
+        // Display the screenshot as a thumbnail.
+        screenshotThumbnail.src = screenshotData;
 
         // Now get the minimized DOM from the active tab via the content script.
         chrome.tabs.query(

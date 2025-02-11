@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Singleton Documentation Sidebar Extension",
+  "version": "1.0",
+  "description": "Manually capture screenshots and a minimized DOM via an embedded sidebar that shows a unified history across pages.",
+  "permissions": ["activeTab", "scripting", "tabs", "storage", "downloads"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["sidebar.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

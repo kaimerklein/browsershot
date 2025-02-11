@@ -2,13 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Documentation Capture Sidebar</title>
+  <title>Documentation Sidebar</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 10px;
       padding: 0;
-      background-color: #fff;
+      background-color: #f9f9f9;
     }
     h2, h3 {
       margin: 10px 0 5px;
@@ -22,22 +22,30 @@
       border-radius: 4px;
       margin-bottom: 10px;
     }
-    textarea {
-      width: 100%;
-      box-sizing: border-box;
-      margin-bottom: 10px;
-      padding: 5px;
+    .entry {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 10px;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
+      margin-bottom: 5px;
+    }
+    pre {
+      background-color: #eee;
+      padding: 10px;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
   </style>
 </head>
 <body>
   <h2>Documentation Capture</h2>
   <button id="captureBtn">Capture Screenshot &amp; DOM</button>
-  <h3>Analysis</h3>
-  <textarea id="analysisArea" placeholder="LLM analysis will appear here..."></textarea>
-  <h3>Your Comments</h3>
-  <textarea id="comments" placeholder="Add your comments here..."></textarea>
-  <button id="updateBtn">Update Documentation</button>
+  <h3>History</h3>
+  <div id="history"></div>
   <script src="sidebar.js"></script>
 </body>
 </html>
