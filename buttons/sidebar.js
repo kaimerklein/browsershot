@@ -21,6 +21,43 @@ document.addEventListener("DOMContentLoaded", function () {
       entryDiv.appendChild(img);
       entryDiv.appendChild(timeStamp);
       entryDiv.appendChild(domPre);
+
+      // Add interactions section if it exists and has interactions
+      if (entry.interactions && entry.interactions.interactions && entry.interactions.interactions.length > 0) {
+        const interactionsDiv = document.createElement("div");
+        interactionsDiv.className = "interactions";
+        
+        const interactionsTitle = document.createElement("h3");
+        interactionsTitle.textContent = "User Interactions";
+        interactionsDiv.appendChild(interactionsTitle);
+
+        const interactionsList = document.createElement("ul");
+        entry.interactions.interactions.forEach(interaction => {
+          const li = document.createElement("li");
+          const time = new Date(interaction.timestamp).toLocaleTimeString();
+          let text = `${time} - ${interaction.type} on ${interaction.elementPath}`;
+          
+          // Add value change details if they exist
+          if (interaction.details && interaction.details.newValue !== undefined) {
+            text += ` (value changed to: ${interaction.details.newValue})`;
+          }
+          
+          li.textContent = text;
+          interactionsList.appendChild(li);
+        });
+        interactionsDiv.appendChild(interactionsList);
+        
+        // Add duration if start and end times exist
+        if (entry.interactions.startTime && entry.interactions.endTime) {
+          const duration = document.createElement("div");
+          const durationSeconds = ((entry.interactions.endTime - entry.interactions.startTime) / 1000).toFixed(1);
+          duration.textContent = `Duration: ${durationSeconds}s`;
+          interactionsDiv.appendChild(duration);
+        }
+
+        entryDiv.appendChild(interactionsDiv);
+      }
+
       historyDiv.appendChild(entryDiv);
     });
   }

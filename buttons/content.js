@@ -138,22 +138,154 @@
     return results;
   }
 
-  /* === Button Event Handlers === */
-  // Screenshot button: hide overlay, capture screenshot, then show overlay.
+  /* === Interaction Recording === */
+  function createInteractionRecorder() {
+    let interactions = [];
+    let startTime = Date.now();
+
+    // Helper to get a unique selector for an element
+    function getElementPath(element) {
+      if (!element) return '';
+      if (element.id) return `#${element.id}`;
+      
+      let path = [];
+      while (element) {
+        let selector = element.tagName.toLowerCase();
+        if (element.className) {
+          selector += `.${element.className.split(' ').join('.')}`;
+        }
+        let siblings = element.parentNode ? Array.from(element.parentNode.children) : [];
+        if (siblings.length > 1) {
+          let index = siblings.indexOf(element) + 1;
+          selector += `:nth-child(${index})`;
+        }
+        path.unshift(selector);
+        element = element.parentNode;
+        if (element && element.tagName === 'BODY') break;
+      }
+      return path.join(' > ');
+    }
+
+    // Record an interaction
+    function recordInteraction(type, element, details = {}) {
+      const interaction = {
+        timestamp: Date.now(),
+        type: type,
+        elementPath: getElementPath(element),
+        tagName: element.tagName,
+        value: element.value,
+        details: details
+      };
+      interactions.push(interaction);
+    }
+
+    // Wrap event handlers to record interactions
+    function wrapEventHandler(element, eventName, originalHandler) {
+      return function(event) {
+        recordInteraction(eventName, element, {
+          x: event.clientX,
+          y: event.clientY
+        });
+        return originalHandler.apply(this, arguments);
+      };
+    }
+
+    // Initialize recording for an element
+    function initializeElementRecording(element) {
+      // Skip our own UI elements
+      if (element.closest('#overlay-container, #sidebar-container, #toast-message')) {
+        return;
+      }
+
+      // Record input changes
+      if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
+        element.addEventListener('change', (e) => {
+          recordInteraction('value-change', element, {
+            oldValue: element.defaultValue,
+            newValue: element.value
+          });
+        });
+      }
+
+      // Wrap existing click handlers
+      const existingClick = element.onclick;
+      if (existingClick) {
+        element.onclick = wrapEventHandler(element, 'click', existingClick);
+      }
+
+      // Record all clicks anyway
+      element.addEventListener('click', (e) => {
+        if (e.target === element) {
+          recordInteraction('click', element, {
+            x: e.clientX,
+            y: e.clientY
+          });
+        }
+      });
+    }
+
+    // Initialize recording for all elements
+    function initializeRecording() {
+      const elements = document.querySelectorAll('*');
+      elements.forEach(initializeElementRecording);
+
+      // Watch for dynamic elements
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1) { // ELEMENT_NODE
+              initializeElementRecording(node);
+            }
+          });
+        });
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    }
+
+    // Get and clear recorded interactions
+    function getAndClearInteractions() {
+      const result = {
+        interactions: interactions,
+        startTime: startTime,
+        endTime: Date.now()
+      };
+      interactions = [];
+      startTime = Date.now();
+      return result;
+    }
+
+    return {
+      initialize: initializeRecording,
+      getAndClear: getAndClearInteractions
+    };
+  }
+
+  // Create and initialize the recorder
+  const interactionRecorder = createInteractionRecorder();
+  interactionRecorder.initialize();
+
+  /* === Update Screenshot Logic === */
   screenshotButton.addEventListener("click", () => {
-    hideUIElements(); // Hide all UI elements
+    hideUIElements();
     
     setTimeout(() => {
       chrome.runtime.sendMessage({ type: "capture_screenshot" }, (response) => {
         if (response && response.status === "done") {
           const screenshotData = response.screenshot;
           const minimizedDOM = getMinimizedDOM();
+          const interactions = interactionRecorder.getAndClear();
+          
           const newEntry = {
             screenshot: screenshotData,
             minimizedDOM: minimizedDOM,
             timestamp: Date.now(),
+            interactions: interactions
           };
-          // Append new entry to documentation history.
+
           chrome.storage.local.get("documentationHistory", (data) => {
             let history = data.documentationHistory || [];
             history.push(newEntry);
@@ -163,9 +295,9 @@
         } else {
           showToast("Screenshot failed", false);
         }
-        restoreUIElements(); // Restore all UI elements
+        restoreUIElements();
       });
-    }, 100); // Brief delay to ensure elements are hidden
+    }, 100);
   });
 
   // Sidebar toggle button: toggle display of the sidebar.
