@@ -90,6 +90,26 @@
   // Set overlay visibility.
   function setOverlayVisibility(visible) {
     overlayContainer.style.opacity = visible ? "1" : "0";
+    overlayContainer.style.pointerEvents = visible ? "auto" : "none";
+  }
+
+  // Hide UI elements before screenshot
+  function hideUIElements() {
+    overlayContainer.remove();
+    if (sidebarContainer.style.display !== "none") {
+      sidebarContainer.dataset.wasVisible = "true";
+      sidebarContainer.style.display = "none";
+    }
+  }
+
+  // Restore UI elements after screenshot
+  function restoreUIElements() {
+    document.body.appendChild(overlayContainer);
+    setOverlayVisibility(true);
+    if (sidebarContainer.dataset.wasVisible === "true") {
+      sidebarContainer.style.display = "block";
+      delete sidebarContainer.dataset.wasVisible;
+    }
   }
 
   // Get minimized DOM snapshot (extract basic field info).
@@ -121,7 +141,8 @@
   /* === Button Event Handlers === */
   // Screenshot button: hide overlay, capture screenshot, then show overlay.
   screenshotButton.addEventListener("click", () => {
-    setOverlayVisibility(false); // Hide overlay buttons
+    hideUIElements(); // Hide all UI elements
+    
     setTimeout(() => {
       chrome.runtime.sendMessage({ type: "capture_screenshot" }, (response) => {
         if (response && response.status === "done") {
@@ -142,9 +163,9 @@
         } else {
           showToast("Screenshot failed", false);
         }
-        setOverlayVisibility(true); // Fade overlay buttons back in
+        restoreUIElements(); // Restore all UI elements
       });
-    }, 100); // Brief delay to ensure overlay is hidden.
+    }, 100); // Brief delay to ensure elements are hidden
   });
 
   // Sidebar toggle button: toggle display of the sidebar.
